@@ -16,8 +16,7 @@ temp/
 venv/
 .venv/
 workflow/
-gfpgan/
-models/inswapper_128.onnx
-models/GFPGANv1.4.pth
+modelos/inswapper_128.onnx
+modelos/GFPGANv1.4.pth
 *.onnx
-models/DMDNet.pth
+modelos/DMDNet.pth

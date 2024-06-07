@@ -13,8 +13,8 @@ import torch  # se tiene que importar sin importar que no se ejecute
 import onnxruntime
 import tensorflow
 
-import modules.globals
-import modules.ui as ui
+import modulos.globals
+import modulos.ui as ui
 
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="insightface")
@@ -70,13 +70,13 @@ def parse_args() -> None:
 
     args = program.parse_args()
 
-    modules.globals.video_encoder = args.video_encoder
-    modules.globals.video_quality = args.video_quality
-    modules.globals.max_memory = args.max_memory
-    modules.globals.execution_providers = decode_execution_providers(
+    modulos.globals.video_encoder = args.video_encoder
+    modulos.globals.video_quality = args.video_quality
+    modulos.globals.max_memory = args.max_memory
+    modulos.globals.execution_providers = decode_execution_providers(
         args.execution_provider
     )
-    modules.globals.execution_threads = args.execution_threads
+    modulos.globals.execution_threads = args.execution_threads
 
 
 def encode_execution_providers(execution_providers: List[str]) -> List[str]:
@@ -107,9 +107,9 @@ def suggest_max_memory() -> int:
 
 
 def suggest_execution_threads() -> int:
-    if "DmlExecutionProvider" in modules.globals.execution_providers:
+    if "DmlExecutionProvider" in modulos.globals.execution_providers:
         return 1
-    if "ROCMExecutionProvider" in modules.globals.execution_providers:
+    if "ROCMExecutionProvider" in modulos.globals.execution_providers:
         return 1
     return 8
 
@@ -120,10 +120,10 @@ def limit_resources() -> None:
     for gpu in gpus:
         tensorflow.config.experimental.set_memory_growth(gpu, True)
     # limit memory usage
-    if modules.globals.max_memory:
-        memory = modules.globals.max_memory * 1024**3
+    if modulos.globals.max_memory:
+        memory = modulos.globals.max_memory * 1024**3
         if platform.system().lower() == "darwin":
-            memory = modules.globals.max_memory * 1024**6
+            memory = modulos.globals.max_memory * 1024**6
         if platform.system().lower() == "windows":
             import ctypes
 
@@ -137,8 +137,7 @@ def limit_resources() -> None:
             resource.setrlimit(resource.RLIMIT_DATA, (memory, memory))  # type: ignore
 
 
-def run() -> None:
-    parse_args()
-    limit_resources()
-    window = ui.init()
-    window.mainloop()
+parse_args()
+limit_resources()
+window = ui.init()
+window.mainloop()

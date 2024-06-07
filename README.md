@@ -18,11 +18,11 @@ pip install -r requirements.txt
 ## Iniciar Programa
 
 ```bash
-python run.py --execution-provider cuda
+python programa.py --execution-provider cuda
 ```
 
 Definiendo recursos:
 
 ```bash
-python run.py --execution-provider cuda --execution-threads 60 --max-memory 60
+python programa.py --execution-provider cuda --execution-threads 60 --max-memory 60
 ```

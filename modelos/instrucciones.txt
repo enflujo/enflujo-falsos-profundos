@@ -1,0 +1,1 @@
+Acá va el modelo: inswapper_128_fp16.onnx

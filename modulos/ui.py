@@ -11,8 +11,8 @@ from cv2.typing import MatLike
 from typing import Tuple, Optional
 from PIL import Image, ImageOps
 
-import modules.globals
-from modules.utilities import is_image, resolve_relative_path
+import modulos.globals
+from modulos.ayudas import is_image, resolve_relative_path
 
 PREVIEW_MAX_HEIGHT = 700
 PREVIEW_MAX_WIDTH = 1200
@@ -23,7 +23,7 @@ RECENT_DIRECTORY_OUTPUT = None
 MAX_PROBABILITY = 0.85
 MUCHAS_CARAS = False
 
-img_ft, vid_ft = modules.globals.file_types
+img_ft, vid_ft = modulos.globals.file_types
 
 
 def init() -> ctk.CTk:
@@ -57,13 +57,13 @@ def init() -> ctk.CTk:
     preview_label.pack(fill="both", expand=True)
 
     analizador = FaceAnalysis(
-        name="buffalo_l", providers=modules.globals.execution_providers
+        name="buffalo_l", providers=modulos.globals.execution_providers
     )
     analizador.prepare(ctx_id=0, det_size=(640, 640))
 
-    rutaModelo = resolve_relative_path("../models/inswapper_128_fp16.onnx")
+    rutaModelo = resolve_relative_path("../modelos/inswapper_128_fp16.onnx")
     modelo: INSwapper = get_model(
-        rutaModelo, providers=modules.globals.execution_providers
+        rutaModelo, providers=modulos.globals.execution_providers
     )
 
     def get_one_face(fotograma: MatLike) -> Optional[Face]:
@@ -96,7 +96,7 @@ def init() -> ctk.CTk:
         return temp_frame
 
     def webcam_preview():
-        if modules.globals.source_path is None:
+        if modulos.globals.source_path is None:
             # No image selected
             return
         cap = cv2.VideoCapture(0)
@@ -115,8 +115,8 @@ def init() -> ctk.CTk:
                 break
 
             # Select and save face image only once
-            if source_image is None and modules.globals.source_path:
-                source_image = get_one_face(cv2.imread(modules.globals.source_path))
+            if source_image is None and modulos.globals.source_path:
+                source_image = get_one_face(cv2.imread(modulos.globals.source_path))
 
             temp_frame = frame.copy()  # Create a copy of the frame
             temp_frame = process_frame(source_image, temp_frame)
@@ -148,13 +148,13 @@ def init() -> ctk.CTk:
         )
 
         if is_image(source_path):
-            modules.globals.source_path = source_path
-            image = render_image_preview(modules.globals.source_path, (200, 200))
+            modulos.globals.source_path = source_path
+            image = render_image_preview(modulos.globals.source_path, (200, 200))
             source_label.configure(image=image)
 
             webcam_preview()
         else:
-            modules.globals.source_path = None
+            modulos.globals.source_path = None
             source_label.configure(image=None)
 
     def render_image_preview(image_path: str, size: Tuple[int, int]) -> ctk.CTkImage:
