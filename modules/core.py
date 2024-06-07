@@ -1,5 +1,4 @@
 import os
-import sys
 
 # single thread doubles cuda performance - needs to be set before torch import
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -135,7 +134,7 @@ def limit_resources() -> None:
         else:
             import resource
 
-            resource.setrlimit(resource.RLIMIT_DATA, (memory, memory))
+            resource.setrlimit(resource.RLIMIT_DATA, (memory, memory))  # type: ignore
 
 
 def run() -> None:

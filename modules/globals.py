@@ -1,5 +1,4 @@
-import os
-from typing import List, Dict
+from typing import List
 
 file_types = [
     ("Image", ("*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp")),
