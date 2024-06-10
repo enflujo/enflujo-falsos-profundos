@@ -1,1 +1,1 @@
-python run.py --execution-provider cuda --execution-threads 60 --max-memory 60
+python programa.py --execution-provider cuda --max-memory 60

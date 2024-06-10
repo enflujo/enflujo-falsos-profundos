@@ -26,24 +26,6 @@ def parse_args() -> None:
     program = argparse.ArgumentParser()
 
     program.add_argument(
-        "--video-encoder",
-        help="adjust output video encoder",
-        dest="video_encoder",
-        default="libx264",
-        choices=["libx264", "libx265", "libvpx-vp9"],
-    )
-
-    program.add_argument(
-        "--video-quality",
-        help="adjust output video quality",
-        dest="video_quality",
-        type=int,
-        default=18,
-        choices=range(52),
-        metavar="[0-51]",
-    )
-
-    program.add_argument(
         "--max-memory",
         help="maximum amount of RAM in GB",
         dest="max_memory",
@@ -60,23 +42,12 @@ def parse_args() -> None:
         nargs="+",
     )
 
-    program.add_argument(
-        "--execution-threads",
-        help="number of execution threads",
-        dest="execution_threads",
-        type=int,
-        default=suggest_execution_threads(),
-    )
-
     args = program.parse_args()
 
-    modulos.globals.video_encoder = args.video_encoder
-    modulos.globals.video_quality = args.video_quality
     modulos.globals.max_memory = args.max_memory
     modulos.globals.execution_providers = decode_execution_providers(
         args.execution_provider
     )
-    modulos.globals.execution_threads = args.execution_threads
 
 
 def encode_execution_providers(execution_providers: List[str]) -> List[str]:

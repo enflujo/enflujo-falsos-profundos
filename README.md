@@ -2,8 +2,6 @@
 
 Basado en https://github.com/hacksider/Deep-Live-Cam
 
-Asume 
-
 ## Instalación
 
 - Python (recomendado 3.10)
@@ -24,5 +22,11 @@ python programa.py --execution-provider cuda
 Definiendo recursos:
 
 ```bash
-python programa.py --execution-provider cuda --execution-threads 60 --max-memory 60
+python programa.py --execution-provider cuda --max-memory 60
+```
+
+## Desinstalar todas las dependencias
+
+```bash
+pip freeze > unins ; pip uninstall -y -r unins ; del unins
 ```

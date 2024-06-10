@@ -6,13 +6,14 @@ from insightface.app.common import Face
 from insightface.model_zoo.inswapper import INSwapper
 
 import cv2
-from cv2.typing import MatLike
-
-from typing import Tuple, Optional
-from PIL import Image, ImageOps
-
 import modulos.globals
 from modulos.ayudas import is_image, resolve_relative_path
+
+# Tipos
+from cv2.typing import MatLike
+from typing import Tuple, Optional, cast
+from PIL import Image, ImageOps
+
 
 PREVIEW_MAX_HEIGHT = 700
 PREVIEW_MAX_WIDTH = 1200
@@ -21,9 +22,7 @@ RECENT_DIRECTORY_TARGET = None
 RECENT_DIRECTORY_OUTPUT = None
 
 MAX_PROBABILITY = 0.85
-MUCHAS_CARAS = False
-
-img_ft, vid_ft = modulos.globals.file_types
+MUCHAS_CARAS = True
 
 
 def init() -> ctk.CTk:
@@ -51,6 +50,7 @@ def init() -> ctk.CTk:
     preview = ctk.CTkToplevel(interfaz)
     preview.withdraw()
     preview.title("Espejito Espejito")
+    preview.wm_iconbitmap("favicon.ico")
     preview.configure()
     preview.resizable(width=False, height=False)
     preview_label = ctk.CTkLabel(preview, text="")
@@ -62,8 +62,8 @@ def init() -> ctk.CTk:
     analizador.prepare(ctx_id=0, det_size=(640, 640))
 
     rutaModelo = resolve_relative_path("../modelos/inswapper_128_fp16.onnx")
-    modelo: INSwapper = get_model(
-        rutaModelo, providers=modulos.globals.execution_providers
+    modelo: INSwapper = cast(
+        INSwapper, get_model(rutaModelo, providers=modulos.globals.execution_providers)
     )
 
     def get_one_face(fotograma: MatLike) -> Optional[Face]:
@@ -81,7 +81,7 @@ def init() -> ctk.CTk:
             return None
 
     def swap_face(source_face: Face, target_face: Face, temp_frame: MatLike) -> MatLike:
-        return modelo.get(temp_frame, target_face, source_face, paste_back=True)
+        return modelo.get(temp_frame, target_face, source_face, paste_back=True)  # type: ignore
 
     def process_frame(source_face: Face, temp_frame: MatLike) -> MatLike:
         if MUCHAS_CARAS:
@@ -96,55 +96,53 @@ def init() -> ctk.CTk:
         return temp_frame
 
     def webcam_preview():
+        # Cargar imagen fuente del falso profundo
         if modulos.globals.source_path is None:
-            # No image selected
             return
-        cap = cv2.VideoCapture(0)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)
-        cap.set(cv2.CAP_PROP_FPS, 60)
+        source_image = get_one_face(cv2.imread(modulos.globals.source_path))
+        if source_image is None:
+            return
 
-        preview_label.configure(image=None)  # Reset the preview image before startup
-        preview.deiconify()  # Open preview window
+        # Iniciar cámara
+        camara = cv2.VideoCapture(0)
+        camara.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
+        camara.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)
+        camara.set(cv2.CAP_PROP_FPS, 60)
 
-        source_image = None  # Initialize variable for the selected face image
+        preview_label.configure(image=None)
+        preview.deiconify()  # Abrir ventana de video
 
         while True:
-            ret, frame = cap.read()
+            ret, frame = camara.read()
+
             if not ret:
                 break
-
-            # Select and save face image only once
-            if source_image is None and modulos.globals.source_path:
-                source_image = get_one_face(cv2.imread(modulos.globals.source_path))
-
-            temp_frame = frame.copy()  # Create a copy of the frame
-            temp_frame = process_frame(source_image, temp_frame)
+            frame = cv2.flip(frame, 1)
+            copia = frame.copy()  # Copia de la imagen
+            copia = process_frame(source_image, copia)
 
             image = cv2.cvtColor(
-                temp_frame, cv2.COLOR_BGR2RGB
+                copia, cv2.COLOR_BGR2RGB
             )  # Convert the image to RGB format to display it with Tkinter
             image = Image.fromarray(image)
 
             image = ImageOps.contain(
-                image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS
+                image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.Resampling.LANCZOS
             )
             image = ctk.CTkImage(image, size=image.size)
             preview_label.configure(image=image)
             interfaz.update()
 
-        cap.release()
-        preview.withdraw()  # Close preview window when loop is finished
+        camara.release()
+        preview.withdraw()  # Cerrar ventana de video cuando termine o se apague el programa
 
     def select_source_path() -> None:
-        global img_ft, vid_ft
-
         preview.withdraw()
 
         source_path = ctk.filedialog.askopenfilename(
             title="Seleccionar una imagen de donde extraer la cara",
             initialdir=None,
-            filetypes=[img_ft],
+            filetypes=(("Imágen", ("*.png", "*.jpg", "*.gif", "*.bmp")),),
         )
 
         if is_image(source_path):
@@ -160,7 +158,7 @@ def init() -> ctk.CTk:
     def render_image_preview(image_path: str, size: Tuple[int, int]) -> ctk.CTkImage:
         image = Image.open(image_path)
         if size:
-            image = ImageOps.fit(image, size, Image.LANCZOS)
+            image = ImageOps.fit(image, size, Image.Resampling.LANCZOS)
         return ctk.CTkImage(image, size=image.size)
 
     return interfaz
