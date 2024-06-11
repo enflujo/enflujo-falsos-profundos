@@ -22,7 +22,7 @@ python programa.py --execution-provider cuda
 Definiendo recursos:
 
 ```bash
-python programa.py --execution-provider cuda --max-memory 60
+python programa.py ----contexto cuda --max-memory 60
 ```
 
 ## Desinstalar todas las dependencias
