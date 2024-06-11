@@ -19,6 +19,7 @@ from utilidades.ayudas import (
 )
 
 import customtkinter as ctk
+from customtkinter import CTk, CTkLabel, CTkToplevel
 from insightface.app import FaceAnalysis
 from insightface.model_zoo import get_model
 from insightface.app.common import Face
@@ -27,7 +28,6 @@ from PIL import Image, ImageOps
 
 # Tipos
 from cv2.typing import MatLike
-from customtkinter import CTk, CTkLabel, CTkToplevel
 from typing import Tuple, Optional, List, cast
 
 dimsLienzo = (1200, 700)
@@ -48,7 +48,7 @@ def configurarPrograma() -> None:
     programa = ArgumentParser()
 
     programa.add_argument(
-        "--max-memory",
+        "--memoria-max",
         help="máximo de RAM en GB",
         dest="memoriaMax",
         type=int,
@@ -93,7 +93,7 @@ def crearInterfaz() -> None:
     ventanaCamara.title("Espejito Espejito")
     ventanaCamara.wm_iconbitmap("favicon.ico")
     ventanaCamara.configure()
-    ventanaCamara.resizable(width=False, height=False)
+    ventanaCamara.resizable(width=True, height=True)
 
     lienzo = CTkLabel(ventanaCamara, text="")
     lienzo.pack(fill="both", expand=True)
@@ -178,16 +178,21 @@ def iniciarCamara(rutaImagen: str):
     caraOriginal = unaCara(cv2.imread(rutaImagen))
     if caraOriginal is None:
         return
-
+    a = 480  # 960
+    b = 270  # 540
     # Iniciar cámara
     camara = cv2.VideoCapture(0)
-    camara.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
-    camara.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)
-    camara.set(cv2.CAP_PROP_FPS, 60)
+    camara.set(cv2.CAP_PROP_FRAME_WIDTH, a)
+    camara.set(cv2.CAP_PROP_FRAME_HEIGHT, b)
+    camara.set(cv2.CAP_PROP_FPS, 24)
 
     lienzo.configure(image=None)
     ventanaCamara.deiconify()  # Abrir ventana de video
-
+    ventanaCamara.wm_attributes("-fullscreen", True)
+    ventanaCamara.state("normal")
+    interfaz.update()
+    print((ventanaCamara.winfo_width(), ventanaCamara.winfo_height()))
+    dimensiones = (ventanaCamara.winfo_width(), ventanaCamara.winfo_height())
     while True:
         ret, frame = camara.read()
 
@@ -205,7 +210,7 @@ def iniciarCamara(rutaImagen: str):
         imagen = ImageOps.contain(
             imagen, (dimsLienzo[0], dimsLienzo[1]), Image.Resampling.LANCZOS
         )
-        imagen = ctk.CTkImage(imagen, size=imagen.size)
+        imagen = ctk.CTkImage(imagen, size=dimensiones)
         lienzo.configure(image=imagen)
         interfaz.update()
 
